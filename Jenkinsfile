@@ -13,8 +13,8 @@ pipeline {
            {
               stage("Unit Tests"){
                  steps {
-                    build job: 'test1', parameters: [string(name: 'Environment', value: "$env.Environment")]
-                    echo "Starting test1"
+                    echo "Starting unit_tests"
+                    build job: 'unit_tests', parameters: [string(name: 'Environment', value: "$env.Environment")]
                  }
 /*                 steps {
                     build job: 'test2', parameters: [string(name: 'Environment', value: "$env.Environment")]
@@ -24,6 +24,7 @@ pipeline {
               stage("API Tests"){
                  steps {
                     echo "Starting API tests"
+                    build job: 'api_tests', parameters: [string(name: 'Environment', value: "$env.Environment")]
                  }
               }
            }
