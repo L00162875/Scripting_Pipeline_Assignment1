@@ -2,23 +2,28 @@ pipeline {
     agent any
 
     stages {
-        stage ('Stg1'){
+        stage ('Build'){
            steps {
-              echo "Step 1"
+              echo "This is a build stage"
            }
         }
 
-        stage('Stg2'){
+        stage('Tests'){
            parallel
            {
-              stage("2.1"){
+              stage("Unit Tests"){
                  steps {
-                    echo "This is step 2.1"
+                    build job: 'test1', parameters: [string(name: 'Environment', value: "$env.Environment")]
+                    echo "Starting test1"
                  }
+/*                 steps {
+                    build job: 'test2', parameters: [string(name: 'Environment', value: "$env.Environment")]
+                    echo "Starting test2"
+                 }*/
               }
-              stage("2.2"){
+              stage("API Tests"){
                  steps {
-                    echo "This is step 2.2"
+                    echo "Starting API tests"
                  }
               }
            }
