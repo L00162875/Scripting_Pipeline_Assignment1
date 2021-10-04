@@ -8,10 +8,10 @@ pipeline {
         stage ('Build'){
            steps {
               script {
-                 def string_timestamp = "the current time is:"
-                 echo "${string_var}"
+                 def string_timestamp_var = "the current time is:"
+                 echo "${string_timestamp_var}"
                  sh """
-                    echo ${string_var}
+                    echo ${string_timestamp_var}
                  """
                  echo "TimeStamp: ${currentBuild.startTimeInMillis}"
               }
