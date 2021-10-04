@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    options {
+        parallelsAlwaysFailFast()
+    }
 
     stages {
         stage ('Build'){
@@ -16,10 +19,6 @@ pipeline {
                     echo "Starting unit_tests"
                     build job: 'unit_tests', parameters: [string(name: 'Environment', value: "$env.Environment")]
                  }
-/*                 steps {
-                    build job: 'test2', parameters: [string(name: 'Environment', value: "$env.Environment")]
-                    echo "Starting test2"
-                 }*/
               }
               stage("API Tests"){
                  steps {
@@ -27,6 +26,23 @@ pipeline {
                     build job: 'api_tests', parameters: [string(name: 'Environment', value: "$env.Environment")]
                  }
               }
+           }
+        }
+
+        stage('Package'){}
+            steps {
+                echo "This is a package stage"
+            }
+        }
+
+        stage('Deploy'){
+           when {
+              not {
+                 branch "master"
+              }
+           }
+           steps{
+              echo "Run if not master"
            }
         }
     }
