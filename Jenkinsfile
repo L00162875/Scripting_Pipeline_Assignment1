@@ -14,6 +14,7 @@ pipeline {
                     echo ${string_timestamp_var}
                  """
                  echo "TimeStamp: ${currentBuild.startTimeInMillis}"
+                 echo "TimeStamp: ${Util.getTimeSpanString(System.currentTimeMillis())}"
               }
               echo "This is a build stage"
            }
