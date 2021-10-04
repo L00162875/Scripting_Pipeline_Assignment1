@@ -66,6 +66,7 @@ pipeline {
                     echo "Going to exec: mv ${jarPath} ${artifactPath}"
                     sh "mv ${jarPath} ${artifactPath}"
                     echo "Final artifact for branch ${currentBranch} is ready: ${artifactPath}"
+                    sh 'printenv'
                 }
             }
         }
