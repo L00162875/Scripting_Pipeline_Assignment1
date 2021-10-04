@@ -5,6 +5,7 @@ pipeline {
     }
     environment {
         TS = ts()
+        BRANCH_NAME = "${GIT_BRANCH.split("/")[1]}"
     }
     stages {
         stage ('Build'){
@@ -49,10 +50,6 @@ pipeline {
                         returnStdout: true
                     ).trim()
                     echo "Project name: ${projectName}"
-                    def currentBranch = sh (
-                        script: 'git branch --no-color --show-current',
-                        returnStdout: true
-                    ).trim()
                     def projectVersion = sh (
                         script: 'mvn help:evaluate -Dexpression=project.version | grep "^[^\\[]"',
                         returnStdout: true
@@ -61,12 +58,11 @@ pipeline {
                     def fileName = projectName + '-' + projectVersion
                     def jarPath = "target/${fileName}.jar"
 
-                    def artifactName = projectName + '-' + projectVersion + '-' + currentBranch + '-' + TS
+                    def artifactName = projectName + '-' + projectVersion + '-' + BRANCH_NAME + '-' + TS
                     def artifactPath = "target/${artifactName}.jar"
                     echo "Going to exec: mv ${jarPath} ${artifactPath}"
                     sh "mv ${jarPath} ${artifactPath}"
-                    echo "Final artifact for branch ${currentBranch} is ready: ${artifactPath}"
-                    sh 'printenv'
+                    echo "Final artifact for branch ${BRANCH_NAME} is ready: ${artifactPath}"
                 }
             }
         }
