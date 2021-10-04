@@ -8,11 +8,12 @@ pipeline {
         stage ('Build'){
            steps {
               script {
-                 def string_var = "im a groovy variable"
+                 def string_timestamp = "the current time is:"
                  echo "${string_var}"
                  sh """
                     echo ${string_var}
                  """
+                 echo "TimeStamp: ${currentBuild.startTimeInMillis}"
               }
               echo "This is a build stage"
            }
