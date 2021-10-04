@@ -9,7 +9,8 @@ pipeline {
     stages {
         stage ('Build'){
            steps {
-              echo "This is a build stage ${TS}"
+              echo "Building timestamp ${TS}"
+              sh 'mvn -B -DskipTests clean'
            }
         }
 
@@ -18,14 +19,21 @@ pipeline {
            {
               stage("Unit Tests"){
                  steps {
-                    echo "Starting unit_tests ${TS}"
+                    echo "Starting unit_tests for build timestamp ${TS}"
                     build job: 'unit_tests', parameters: [string(name: 'Environment', value: "$env.Environment")]
+                    sh 'mvn test'
+                 }
+                 post {
+                     always {
+                         junit 'target/surefire-reports/*.xml'
+                     }
                  }
               }
               stage("API Tests"){
                  steps {
-                    echo "Starting API tests ${TS}"
+                    echo "Starting API tests for build timestamp ${TS}. This is to demonstrate parallel optimization"
                     build job: 'api_tests', parameters: [string(name: 'Environment', value: "$env.Environment")]
+                    sh 'mvn verify'
                  }
               }
            }
@@ -33,18 +41,18 @@ pipeline {
 
         stage('Package'){
             steps {
-                echo "This is a package stage ${TS}"
+                echo "Packaging build for timestamp ${TS}"
             }
         }
 
         stage('Deploy'){
            when {
               not {
-                 branch "master"
+                 branch "main"
               }
            }
            steps{
-              echo "--"
+              echo "Deploying a branch other than main"
            }
         }
     }
