@@ -29,7 +29,7 @@ pipeline {
            }
         }
 
-        stage('Package'){}
+        stage('Package'){
             steps {
                 echo "This is a package stage"
             }
