@@ -7,6 +7,13 @@ pipeline {
     stages {
         stage ('Build'){
            steps {
+              script {
+                 def string_var = "im a groovy variable"
+                 echo "${string_var}"
+                 sh """
+                    echo ${string_var}
+                 """
+              }
               echo "This is a build stage"
            }
         }
