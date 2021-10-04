@@ -20,7 +20,7 @@ pipeline {
               stage("Unit Tests"){
                  steps {
                     echo "Starting unit_tests for build timestamp ${TS}"
-                    build job: 'unit_tests', parameters: [string(name: 'Environment', value: "$env.Environment")]
+//                     build job: 'unit_tests', parameters: [string(name: 'Environment', value: "$env.Environment")]
                     sh 'mvn test'
                  }
                  post {
@@ -32,7 +32,7 @@ pipeline {
               stage("API Tests"){
                  steps {
                     echo "Starting API tests for build timestamp ${TS}. This is to demonstrate parallel optimization"
-                    build job: 'api_tests', parameters: [string(name: 'Environment', value: "$env.Environment")]
+//                     build job: 'api_tests', parameters: [string(name: 'Environment', value: "$env.Environment")]
                     sh 'mvn verify'
                  }
               }
@@ -42,6 +42,31 @@ pipeline {
         stage('Package'){
             steps {
                 echo "Packaging build for timestamp ${TS}"
+                sh 'mvn package -DskipTests=true'
+                script {
+                    def projectName = sh (
+                        script: 'mvn help:evaluate -Dexpression=project.name | grep "^[^\\[]"',
+                        returnStdout: true
+                    ).trim()
+                    echo "Project name: ${projectName}"
+                    def currentBranch = sh (
+                        script: 'git branch --no-color --show-current',
+                        returnStdout: true
+                    ).trim()
+                    def projectVersion = sh (
+                        script: 'mvn help:evaluate -Dexpression=project.version | grep "^[^\\[]"',
+                        returnStdout: true
+                    ).trim()
+                    echo "Project version: ${projectVersion}"
+                    def fileName = projectName + '-' + projectVersion
+                    def jarPath = "target/${fileName}.jar"
+
+                    def artifactName = projectName + '-' + projectVersion + '-' + currentBranch + '-' + TS
+                    def artifactPath = "target/${artifactName}.jar"
+                    echo "Going to exec: mv ${jarPath} ${artifactPath}"
+                    sh "mv ${jarPath} ${artifactPath}"
+                    echo "Final artifact for branch ${currentBranch} is ready: ${artifactPath}"
+                }
             }
         }
 
