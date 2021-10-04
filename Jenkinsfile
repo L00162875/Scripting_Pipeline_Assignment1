@@ -10,11 +10,12 @@ pipeline {
               script {
                  def string_timestamp_var = "the current time is:"
                  echo "${string_timestamp_var}"
+                 def time = new Date()
+                 string_timestamp = time.format("yyMMdd.HHmm", TimeZone.getTimeZone('UTC'))
                  sh """
-                    echo ${string_timestamp_var}
+                    echo ${string_timestamp}
                  """
                  echo "TimeStamp: ${currentBuild.startTimeInMillis}"
-                 echo "TimeStamp: ${Util.getTimeSpanString(System.currentTimeMillis())}"
               }
               echo "This is a build stage"
            }
