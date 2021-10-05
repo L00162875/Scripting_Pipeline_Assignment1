@@ -5,7 +5,6 @@ pipeline {
     }
     environment {
         TS = ts()
-        BRANCH_NAME = "${GIT_BRANCH.split("/")[1]}"
     }
     stages {
         stage ('Build'){
@@ -44,39 +43,44 @@ pipeline {
             steps {
                 echo "Packaging build for timestamp ${TS}"
                 sh 'mvn package -DskipTests=true'
-                script {
-                    def projectName = sh (
-                        script: 'mvn help:evaluate -Dexpression=project.name | grep "^[^\\[]"',
-                        returnStdout: true
-                    ).trim()
-                    echo "Project name: ${projectName}"
-                    def projectVersion = sh (
-                        script: 'mvn help:evaluate -Dexpression=project.version | grep "^[^\\[]"',
-                        returnStdout: true
-                    ).trim()
-                    echo "Project version: ${projectVersion}"
-                    def fileName = projectName + '-' + projectVersion
-                    def jarPath = "target/${fileName}.jar"
-
-                    def artifactName = projectName + '-' + projectVersion + '-' + BRANCH_NAME + '-' + TS
-                    def artifactPath = "target/${artifactName}.jar"
-                    echo "Going to exec: mv ${jarPath} ${artifactPath}"
-                    sh "mv ${jarPath} ${artifactPath}"
-                    echo "Final artifact for branch ${BRANCH_NAME} is ready: ${artifactPath}"
-                }
             }
         }
 
-        stage('Deploy'){
+        stage('Deploy main development pipeline'){
            when {
-              not {
-                 branch "main"
-              }
+             branch "main"
            }
            steps{
-              echo "Deploying a branch other than main"
+              echo "Deploying main development pipeline"
+              package("main")
            }
         }
+
+        stage('Deploy staging pipeline'){
+           when {
+             branch "staging"
+           }
+           steps{
+              echo "Deploying staging pipeline"
+              package("staging")
+           }
+        }
+
+        stage('Deploy production pipeline'){
+           when {
+             branch "production"
+           }
+           steps{
+              echo "Deploying production pipeline"
+              package("production")
+           }
+        }
+    }
+
+    post {
+       success {
+          mail to: team@student.lyit.com, subject: 'The pipeline success'
+       }
     }
 }
 
@@ -89,4 +93,25 @@ def ts() {
     echo ${string_timestamp}
     """
     return string_timestamp
+}
+
+def package(branchName) {
+    def projectName = sh (
+        script: 'mvn help:evaluate -Dexpression=project.name | grep "^[^\\[]"',
+        returnStdout: true
+    ).trim()
+    echo "Project name: ${projectName}"
+    def projectVersion = sh (
+        script: 'mvn help:evaluate -Dexpression=project.version | grep "^[^\\[]"',
+        returnStdout: true
+    ).trim()
+    echo "Project version: ${projectVersion}"
+    def fileName = projectName + '-' + projectVersion
+    def jarPath = "target/${fileName}.jar"
+
+    def artifactName = projectName + '-' + projectVersion + '-' + branchName + '-' + TS
+    def artifactPath = "target/${artifactName}.jar"
+    echo "Going to exec: mv ${jarPath} ${artifactPath}"
+    sh "mv ${jarPath} ${artifactPath}"
+    echo "Final artifact for branch ${branchName} is ready: ${artifactPath}"
 }
