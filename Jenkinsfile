@@ -1,49 +1,35 @@
 def skipStaging = false
+def TS
 
-pipeline {
-    agent any
-    options {
-        parallelsAlwaysFailFast()
-    }
-    environment {
-        TS = ts()
-    }
-    stages {
+node('master') {
+    properties(
+        [
+            parallelsAlwaysFailFast()
+        ]
+    )
+    try {
         stage ('Build'){
-           steps {
-              echo "Building timestamp ${TS}"
-              sh 'mvn -B -DskipTests clean'
-           }
+            TS = ts()
+            echo "Building timestamp ${TS}"
+            sh 'mvn -B -DskipTests clean'
         }
 
-        stage('Tests'){
-           parallel
-           {
-              stage("Unit Tests"){
-                 steps {
+        stage ('Tests') {
+            parallel([
+                unit_tests: {
                     echo "Starting unit_tests for build timestamp ${TS}"
                     sh 'mvn test'
-                 }
-                 post {
-                     always {
-                         junit 'target/surefire-reports/*.xml'
-                     }
-                 }
-              }
-              stage("API Tests"){
-                 steps {
+                },
+                api_tests: {
                     echo "Starting API tests for build timestamp ${TS}. This is to demonstrate parallel optimization"
                     sh 'mvn verify'
-                 }
-              }
-           }
+                }
+            ])
         }
 
-        stage('Package'){
-            steps {
-                echo "Packaging build for timestamp ${TS}"
-                sh 'mvn package -DskipTests=true'
-            }
+        stage('Package') {
+            echo "Packaging build for timestamp ${TS}"
+            sh 'mvn package -DskipTests=true'
         }
 
         stage('Deploy main development pipeline') {
@@ -64,22 +50,17 @@ pipeline {
            }
         }
 
-        stage('Deploy production pipeline'){
-           when {
-             branch "production"
-           }
-           steps{
+        stage('Deploy production pipeline') {
+            if (env.BRANCH_NAME == 'production') {
               echo "Deploying production pipeline"
               buildPackage("production")
-           }
+            }
         }
-    }
-
-    post {
-       success {
-            echo "Do something on success"
-//           mail to: team@student.lyit.com, subject: 'The pipeline success'
-       }
+    } catch (e) {
+        echo "Error"
+        throw e
+    } finally {
+        echo "Do something on success"
     }
 }
 
