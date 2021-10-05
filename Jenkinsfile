@@ -52,7 +52,7 @@ pipeline {
            }
            steps{
               echo "Deploying main development pipeline"
-              package("main")
+              buildPackage("main")
            }
         }
 
@@ -62,7 +62,7 @@ pipeline {
            }
            steps{
               echo "Deploying staging pipeline"
-              package("staging")
+              buildPackage("staging")
            }
         }
 
@@ -72,14 +72,15 @@ pipeline {
            }
            steps{
               echo "Deploying production pipeline"
-              package("production")
+              buildPackage("production")
            }
         }
     }
 
     post {
        success {
-          mail to: team@student.lyit.com, subject: 'The pipeline success'
+            echo "Do something on success"
+//           mail to: team@student.lyit.com, subject: 'The pipeline success'
        }
     }
 }
@@ -95,7 +96,7 @@ def ts() {
     return string_timestamp
 }
 
-def package(branchName) {
+def buildPackage(branchName) {
     def projectName = sh (
         script: 'mvn help:evaluate -Dexpression=project.name | grep "^[^\\[]"',
         returnStdout: true
@@ -111,7 +112,7 @@ def package(branchName) {
 
     def artifactName = projectName + '-' + projectVersion + '-' + branchName + '-' + TS
     def artifactPath = "target/${artifactName}.jar"
-    echo "Going to exec: mv ${jarPath} ${artifactPath}"
-    sh "mv ${jarPath} ${artifactPath}"
+    echo "Going to exec: cp ${jarPath} ${artifactPath}"
+    sh "cp ${jarPath} ${artifactPath}"
     echo "Final artifact for branch ${branchName} is ready: ${artifactPath}"
 }
