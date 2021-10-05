@@ -11,7 +11,7 @@ node('master') {
         stage ('Build'){
             TS = ts()
             echo "Building timestamp ${TS}"
-            sh 'mvn -B -DskipTests clean'
+            sh 'mvn -B -DskipTests=true clean'
         }
 
         stage ('Tests') {
