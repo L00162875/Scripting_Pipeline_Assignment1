@@ -2,11 +2,6 @@ def skipStaging = false
 def TS
 
 node('master') {
-    properties(
-        [
-            parallelsAlwaysFailFast()
-        ]
-    )
     try {
         stage ('Build'){
             TS = ts()
