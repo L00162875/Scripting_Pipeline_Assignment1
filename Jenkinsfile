@@ -30,7 +30,7 @@ node('master') {
         stage('Deploy main development pipeline') {
             if (env.BRANCH_NAME == 'main') {
                 echo "Deploying main development pipeline"
-                buildPackage("main")
+                buildPackage("main", TS)
                 echo "Programmatically disabling staging for demonstration purposes"
                 if (true) {
                     skipStaging = true
@@ -41,14 +41,14 @@ node('master') {
         stage('Deploy staging pipeline') {
             if (env.BRANCH_NAME == 'staging' && !skipStaging) {
               echo "Deploying staging pipeline"
-              buildPackage("staging")
+              buildPackage("staging", TS)
            }
         }
 
         stage('Deploy production pipeline') {
             if (env.BRANCH_NAME == 'production') {
               echo "Deploying production pipeline"
-              buildPackage("production")
+              buildPackage("production", TS)
             }
         }
     } catch (e) {
@@ -70,7 +70,7 @@ def ts() {
     return string_timestamp
 }
 
-def buildPackage(branchName) {
+def buildPackage(branchName, ts) {
     def projectName = sh (
         script: 'mvn help:evaluate -Dexpression=project.name | grep "^[^\\[]"',
         returnStdout: true
@@ -84,7 +84,7 @@ def buildPackage(branchName) {
     def fileName = projectName + '-' + projectVersion
     def jarPath = "target/${fileName}.jar"
 
-    def artifactName = projectName + '-' + projectVersion + '-' + branchName + '-' + TS
+    def artifactName = projectName + '-' + projectVersion + '-' + branchName + '-' + ts
     def artifactPath = "target/${artifactName}.jar"
     echo "Going to exec: cp ${jarPath} ${artifactPath}"
     sh "cp ${jarPath} ${artifactPath}"
