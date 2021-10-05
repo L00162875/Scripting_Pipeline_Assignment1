@@ -1,3 +1,5 @@
+def skipStaging = false
+
 pipeline {
     agent any
     options {
@@ -20,7 +22,6 @@ pipeline {
               stage("Unit Tests"){
                  steps {
                     echo "Starting unit_tests for build timestamp ${TS}"
-//                     build job: 'unit_tests', parameters: [string(name: 'Environment', value: "$env.Environment")]
                     sh 'mvn test'
                  }
                  post {
@@ -32,7 +33,6 @@ pipeline {
               stage("API Tests"){
                  steps {
                     echo "Starting API tests for build timestamp ${TS}. This is to demonstrate parallel optimization"
-//                     build job: 'api_tests', parameters: [string(name: 'Environment', value: "$env.Environment")]
                     sh 'mvn verify'
                  }
               }
@@ -46,21 +46,22 @@ pipeline {
             }
         }
 
-        stage('Deploy main development pipeline'){
+        stage('Deploy main development pipeline') {
            when {
              branch "main"
            }
-           steps{
+           steps {
               echo "Deploying main development pipeline"
               buildPackage("main")
+              echo "Programmatically disabling staging for demonstration purposes"
+              if (true) {
+                skipStaging = true
+              }
            }
         }
 
-        stage('Deploy staging pipeline'){
-           when {
-             branch "staging"
-           }
-           steps{
+        stage('Deploy staging pipeline') {
+            if (env.BRANCH_NAME == 'staging' && !skipStaging) {
               echo "Deploying staging pipeline"
               buildPackage("staging")
            }
