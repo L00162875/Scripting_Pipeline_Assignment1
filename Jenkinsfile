@@ -18,6 +18,10 @@ node('master') {
                 api_tests: {
                     echo "Starting API tests for build timestamp ${TS}. This is to demonstrate parallel optimization"
                     sh 'mvn verify'
+                    echo "Programmatically disabling staging for demonstration purposes"
+                    if (true) {
+                        skipStaging = true
+                    }
                 }
             ])
         }
@@ -31,10 +35,6 @@ node('master') {
             if (env.BRANCH_NAME == 'main') {
                 echo "Deploying main development pipeline"
                 buildPackage("main", TS)
-                echo "Programmatically disabling staging for demonstration purposes"
-                if (true) {
-                    skipStaging = true
-                }
             }
         }
 
